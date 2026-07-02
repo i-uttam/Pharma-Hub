@@ -1,11 +1,5 @@
 import React, { useEffect } from 'react';
-import {
-  Dimensions,
-  Platform,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Dimensions, Platform, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   Easing,
   runOnJS,
@@ -18,6 +12,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { MaterialIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -41,8 +36,16 @@ function LoadingDot({ delay }: { delay: number }) {
   }, []);
 
   const style = useAnimatedStyle(() => ({ opacity: opacity.value }));
-
   return <Animated.View style={[styles.dot, style]} />;
+}
+
+async function getDestination(): Promise<'/login' | '/(tabs)'> {
+  try {
+    const auth = await AsyncStorage.getItem('@pharma_auth');
+    return auth === 'true' ? '/(tabs)' : '/login';
+  } catch {
+    return '/login';
+  }
 }
 
 export default function SplashScreen() {
@@ -59,37 +62,25 @@ export default function SplashScreen() {
   const dotsOpacity = useSharedValue(0);
   const screenOpacity = useSharedValue(1);
 
-  function navigateToLogin() {
-    router.replace('/login');
+  function navigateAway(dest: '/login' | '/(tabs)') {
+    router.replace(dest);
   }
 
   useEffect(() => {
-    // Ring pulse in
     ringScale.value = withTiming(1.1, { duration: 600, easing: Easing.out(Easing.back(1.2)) });
     ringOpacity.value = withTiming(0.15, { duration: 600 });
-
-    // Logo scales + fades in
-    logoScale.value = withDelay(
-      100,
-      withSpring(1, { damping: 14, stiffness: 120 }),
-    );
+    logoScale.value = withDelay(100, withSpring(1, { damping: 14, stiffness: 120 }));
     logoOpacity.value = withDelay(100, withTiming(1, { duration: 500 }));
-
-    // Title slides up
     titleOpacity.value = withDelay(500, withTiming(1, { duration: 500 }));
     titleY.value = withDelay(500, withTiming(0, { duration: 500, easing: Easing.out(Easing.ease) }));
-
-    // Tagline slides up
     taglineOpacity.value = withDelay(750, withTiming(1, { duration: 500 }));
     taglineY.value = withDelay(750, withTiming(0, { duration: 500, easing: Easing.out(Easing.ease) }));
-
-    // Dots appear
     dotsOpacity.value = withDelay(1100, withTiming(1, { duration: 300 }));
 
-    // Fade out and navigate
-    const timer = setTimeout(() => {
+    const timer = setTimeout(async () => {
+      const dest = await getDestination();
       screenOpacity.value = withTiming(0, { duration: 400 }, (finished) => {
-        if (finished) runOnJS(navigateToLogin)();
+        if (finished) runOnJS(navigateAway)(dest);
       });
     }, 2800);
 
@@ -120,34 +111,18 @@ export default function SplashScreen() {
 
   return (
     <Animated.View style={[styles.container, screenStyle, { paddingTop: topPad, paddingBottom: bottomPad + 24 }]}>
-      {/* Decorative background circles */}
       <View style={[styles.bgCircle, styles.bgCircle1]} />
       <View style={[styles.bgCircle, styles.bgCircle2]} />
 
-      {/* Center content */}
       <View style={styles.center}>
-        {/* Ring behind logo */}
         <Animated.View style={[styles.ring, ringStyle]} />
-
-        {/* Logo circle */}
         <Animated.View style={[styles.logoContainer, logoStyle]}>
-          <View style={styles.logoInner}>
-            <MaterialIcons name="local-pharmacy" size={52} color="#0F9D58" />
-          </View>
+          <MaterialIcons name="local-pharmacy" size={52} color="#0F9D58" />
         </Animated.View>
-
-        {/* App name */}
-        <Animated.Text style={[styles.appName, titleStyle]}>
-          MediWholesale
-        </Animated.Text>
-
-        {/* Tagline */}
-        <Animated.Text style={[styles.tagline, taglineStyle]}>
-          Your Trusted Wholesale Pharmacy
-        </Animated.Text>
+        <Animated.Text style={[styles.appName, titleStyle]}>MediWholesale</Animated.Text>
+        <Animated.Text style={[styles.tagline, taglineStyle]}>Your Trusted Wholesale Pharmacy</Animated.Text>
       </View>
 
-      {/* Loading dots at bottom */}
       <Animated.View style={[styles.dotsRow, dotsStyle]}>
         <LoadingDot delay={0} />
         <LoadingDot delay={180} />
@@ -158,83 +133,15 @@ export default function SplashScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0F9D58',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  bgCircle: {
-    position: 'absolute',
-    borderRadius: 999,
-    backgroundColor: 'rgba(255,255,255,0.06)',
-  },
-  bgCircle1: {
-    width: width * 1.4,
-    height: width * 1.4,
-    top: -width * 0.5,
-    left: -width * 0.2,
-  },
-  bgCircle2: {
-    width: width * 1.1,
-    height: width * 1.1,
-    bottom: -width * 0.4,
-    right: -width * 0.3,
-  },
-  center: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  ring: {
-    position: 'absolute',
-    width: 160,
-    height: 160,
-    borderRadius: 80,
-    borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.4)',
-  },
-  logoContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.2,
-    shadowRadius: 24,
-    elevation: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 32,
-  },
-  logoInner: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  appName: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    letterSpacing: 0.5,
-    fontFamily: 'Inter_700Bold',
-    marginBottom: 10,
-  },
-  tagline: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.82)',
-    letterSpacing: 0.3,
-    fontFamily: 'Inter_400Regular',
-  },
-  dotsRow: {
-    flexDirection: 'row',
-    gap: 8,
-    paddingBottom: 8,
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#FFFFFF',
-  },
+  container: { flex: 1, backgroundColor: '#0F9D58', alignItems: 'center', justifyContent: 'center' },
+  bgCircle: { position: 'absolute', borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.06)' },
+  bgCircle1: { width: width * 1.4, height: width * 1.4, top: -width * 0.5, left: -width * 0.2 },
+  bgCircle2: { width: width * 1.1, height: width * 1.1, bottom: -width * 0.4, right: -width * 0.3 },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  ring: { position: 'absolute', width: 160, height: 160, borderRadius: 80, borderWidth: 2, borderColor: 'rgba(255,255,255,0.4)' },
+  logoContainer: { width: 120, height: 120, borderRadius: 60, backgroundColor: '#FFFFFF', shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.2, shadowRadius: 24, elevation: 12, alignItems: 'center', justifyContent: 'center', marginBottom: 32 },
+  appName: { fontSize: 28, fontWeight: '700', color: '#FFFFFF', letterSpacing: 0.5, fontFamily: 'Inter_700Bold', marginBottom: 10 },
+  tagline: { fontSize: 14, color: 'rgba(255,255,255,0.82)', letterSpacing: 0.3, fontFamily: 'Inter_400Regular' },
+  dotsRow: { flexDirection: 'row', gap: 8, paddingBottom: 8 },
+  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#FFFFFF' },
 });

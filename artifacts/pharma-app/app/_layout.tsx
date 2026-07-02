@@ -13,18 +13,27 @@ import {
 } from '@expo-google-fonts/inter';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import { AuthProvider } from '@/context/AuthContext';
+import { CartProvider } from '@/context/CartContext';
+import { WishlistProvider } from '@/context/WishlistContext';
+import { OrdersProvider } from '@/context/OrdersContext';
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 
 function RootLayoutNav() {
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Screen name="login" options={{ headerShown: false }} />
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+    <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
+      <Stack.Screen name="index" />
+      <Stack.Screen name="login" />
+      <Stack.Screen name="otp" />
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="product/[id]" />
+      <Stack.Screen name="products/[category]" />
+      <Stack.Screen name="search" />
+      <Stack.Screen name="checkout" />
+      <Stack.Screen name="order/[id]" />
     </Stack>
   );
 }
@@ -51,7 +60,15 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <GestureHandlerRootView>
             <KeyboardProvider>
-              <RootLayoutNav />
+              <AuthProvider>
+                <CartProvider>
+                  <WishlistProvider>
+                    <OrdersProvider>
+                      <RootLayoutNav />
+                    </OrdersProvider>
+                  </WishlistProvider>
+                </CartProvider>
+              </AuthProvider>
             </KeyboardProvider>
           </GestureHandlerRootView>
         </QueryClientProvider>
