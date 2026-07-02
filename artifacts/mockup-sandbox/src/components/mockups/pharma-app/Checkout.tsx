@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, ChevronDown, Check, Info, FileText, CheckSquare, Briefcase } from 'lucide-react';
+import { ArrowLeft, ChevronDown, Check, Info, FileText, CheckSquare, Briefcase, Banknote } from 'lucide-react';
 
 export function Checkout() {
   return (
@@ -109,7 +109,7 @@ export function Checkout() {
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-[16px] shadow-[0_2px_10px_rgba(0,0,0,0.03)] border border-gray-100 mb-6 flex items-center gap-3">
+        <div className="bg-white p-4 rounded-[16px] shadow-[0_2px_10px_rgba(0,0,0,0.03)] border border-gray-100 mb-4 flex items-center gap-3">
           <div className="w-5 h-5 rounded-full border-2 border-gray-300"></div>
           <div className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-orange-500">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
@@ -118,6 +118,18 @@ export function Checkout() {
             <h4 className="font-semibold text-[14px] text-gray-900">Net Banking</h4>
             <p className="text-[11px] text-gray-500 mt-0.5">All Indian banks supported</p>
           </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-[16px] shadow-[0_2px_10px_rgba(0,0,0,0.03)] border border-gray-100 mb-6 flex items-center gap-3">
+          <div className="w-5 h-5 rounded-full border-2 border-gray-300"></div>
+          <div className="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center text-green-600">
+            <Banknote size={16} />
+          </div>
+          <div className="flex-1">
+            <h4 className="font-semibold text-[14px] text-gray-900">Cash on Delivery</h4>
+            <p className="text-[11px] text-gray-500 mt-0.5">Pay in cash when order arrives</p>
+          </div>
+          <span className="text-[10px] font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">COD</span>
         </div>
 
         {/* GST Invoice */}
