@@ -1,31 +1,30 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { Appearance } from 'react-native';
+import { useColorScheme } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export type ThemePreference = 'light' | 'dark' | 'system';
 
-type ThemeContextType = {
+export type ThemeContextType = {
   preference: ThemePreference;
   setPreference: (p: ThemePreference) => void;
   isDark: boolean;
 };
 
 const THEME_KEY = '@pharma_theme';
-const ThemeContext = createContext<ThemeContextType | null>(null);
+export const ThemeContext = createContext<ThemeContextType | null>(null);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [preference, setPreferenceState] = useState<ThemePreference>('system');
-
-  const systemScheme = Appearance.getColorScheme();
+  const systemScheme = useColorScheme();
   const isDark =
-    preference === 'dark' || (preference === 'system' && systemScheme === 'dark');
+    preference === 'dark' ||
+    (preference === 'system' && systemScheme === 'dark');
 
   useEffect(() => {
     AsyncStorage.getItem(THEME_KEY)
       .then((s) => {
         if (s === 'light' || s === 'dark' || s === 'system') {
           setPreferenceState(s);
-          Appearance.setColorScheme(s === 'system' ? null : s);
         }
       })
       .catch(() => {});
@@ -33,7 +32,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const setPreference = useCallback((p: ThemePreference) => {
     setPreferenceState(p);
-    Appearance.setColorScheme(p === 'system' ? null : p);
     AsyncStorage.setItem(THEME_KEY, p).catch(() => {});
   }, []);
 
