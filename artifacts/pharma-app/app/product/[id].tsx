@@ -61,18 +61,18 @@ export default function ProductDetailScreen() {
         style={[styles.heroGradient, { paddingTop: topPad }]}
       >
         <View style={styles.headerRow}>
-          <Pressable style={[styles.headerBtn, { backgroundColor: 'rgba(255,255,255,0.9)' }]} onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={22} color={colors.foreground} />
+          <Pressable style={styles.headerBtn} onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={22} color="#FFFFFF" />
           </Pressable>
           <View style={styles.headerActions}>
             <Pressable
-              style={[styles.headerBtn, { backgroundColor: 'rgba(255,255,255,0.9)' }]}
+              style={[styles.headerBtn, wishlisted && styles.headerBtnWishlisted]}
               onPress={() => { toggle(medicine.id); Haptics.selectionAsync(); }}
             >
-              <Ionicons name={wishlisted ? 'heart' : 'heart-outline'} size={22} color={wishlisted ? colors.destructive : colors.foreground} />
+              <Ionicons name={wishlisted ? 'heart' : 'heart-outline'} size={22} color={wishlisted ? '#FFFFFF' : '#FFFFFF'} />
             </Pressable>
-            <Pressable style={[styles.headerBtn, { backgroundColor: 'rgba(255,255,255,0.9)' }]}>
-              <Ionicons name="share-outline" size={22} color={colors.foreground} />
+            <Pressable style={styles.headerBtn}>
+              <Ionicons name="share-outline" size={22} color="#FFFFFF" />
             </Pressable>
           </View>
         </View>
@@ -284,7 +284,8 @@ const styles = StyleSheet.create({
   notFoundText: { fontSize: 18, fontWeight: '600', fontFamily: 'Inter_600SemiBold' },
   heroGradient: { paddingHorizontal: 16, paddingBottom: 0 },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 8 },
-  headerBtn: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  headerBtn: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.30)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' },
+  headerBtnWishlisted: { backgroundColor: 'rgba(234,67,53,0.75)', borderColor: 'rgba(255,255,255,0.25)' },
   headerActions: { flexDirection: 'row', gap: 10 },
   heroImageWrap: { alignItems: 'center', paddingVertical: 24 },
   sheet: { borderTopLeftRadius: 28, borderTopRightRadius: 28, marginTop: -16, paddingHorizontal: 20, paddingTop: 24, gap: 16 },

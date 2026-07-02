@@ -49,8 +49,11 @@ export default function ProductsScreen() {
       {/* Header */}
       <View style={[styles.header, { paddingTop: topPad + 8, backgroundColor: colors.card, borderBottomColor: colors.border }]}>
         <View style={styles.headerTop}>
-          <Pressable onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color={colors.foreground} />
+          <Pressable
+            style={[styles.backBtn, { backgroundColor: colors.muted, borderColor: colors.border }]}
+            onPress={() => router.back()}
+          >
+            <Ionicons name="arrow-back" size={20} color={colors.foreground} />
           </Pressable>
           <Text style={[styles.title, { color: colors.foreground }]}>{catInfo?.label ?? category}</Text>
           <Text style={[styles.count, { color: colors.mutedForeground }]}>{allMedicines.length} products</Text>
@@ -120,6 +123,7 @@ export default function ProductsScreen() {
 const styles = StyleSheet.create({
   header: { paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: 1, gap: 10 },
   headerTop: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  backBtn: { width: 38, height: 38, borderRadius: 11, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
   title: { flex: 1, fontSize: 20, fontWeight: '700', fontFamily: 'Inter_700Bold' },
   count: { fontSize: 13, fontFamily: 'Inter_400Regular' },
   searchBar: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, height: 42, borderRadius: 10, borderWidth: 1 },
