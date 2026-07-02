@@ -5,6 +5,7 @@ import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MedicineCard from '@/components/MedicineCard';
+import FeaturedProductCard from '@/components/FeaturedProductCard';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { CATEGORIES, MEDICINES } from '@/data/medicines';
@@ -105,14 +106,23 @@ export default function HomeScreen() {
             <Text style={[styles.seeAll, { color: colors.primary }]}>See All</Text>
           </Pressable>
         </View>
+      </View>
 
-        <View style={styles.twoColGrid}>
-          {FEATURED.map((m) => (
-            <View key={m.id} style={{ flex: 1, minWidth: 0 }}>
-              <MedicineCard medicine={m} />
-            </View>
-          ))}
-        </View>
+      {/* Horizontal carousel — bleeds edge-to-edge */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.carousel}
+        decelerationRate="fast"
+        snapToInterval={186}
+        snapToAlignment="start"
+      >
+        {FEATURED.map((m) => (
+          <FeaturedProductCard key={m.id} medicine={m} />
+        ))}
+      </ScrollView>
+
+      <View style={{ paddingHorizontal: 20 }}>
 
         {/* Recently viewed / Top sellers */}
         <View style={styles.sectionHeader}>
@@ -177,7 +187,7 @@ const styles = StyleSheet.create({
   catChip: { width: '22%', alignItems: 'center', gap: 6 },
   catIcon: { width: 56, height: 56, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
   catLabel: { fontSize: 11, fontWeight: '500', fontFamily: 'Inter_500Medium', textAlign: 'center' },
-  twoColGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  carousel: { paddingLeft: 20, paddingRight: 12, gap: 10, paddingBottom: 4 },
   reorderCard: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 16, padding: 16, gap: 14, marginTop: 8, marginBottom: 8 },
   reorderTitle: { fontSize: 14, fontWeight: '600', fontFamily: 'Inter_600SemiBold' },
   reorderSub: { fontSize: 12, fontFamily: 'Inter_400Regular', marginTop: 2 },
