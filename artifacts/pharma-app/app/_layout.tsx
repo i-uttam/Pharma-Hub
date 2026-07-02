@@ -17,6 +17,7 @@ import { AuthProvider } from '@/context/AuthContext';
 import { CartProvider } from '@/context/CartContext';
 import { WishlistProvider } from '@/context/WishlistContext';
 import { OrdersProvider } from '@/context/OrdersContext';
+import { ThemeProvider } from '@/context/ThemeContext';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -60,15 +61,17 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <GestureHandlerRootView>
             <KeyboardProvider>
-              <AuthProvider>
-                <CartProvider>
-                  <WishlistProvider>
-                    <OrdersProvider>
-                      <RootLayoutNav />
-                    </OrdersProvider>
-                  </WishlistProvider>
-                </CartProvider>
-              </AuthProvider>
+              <ThemeProvider>
+                <AuthProvider>
+                  <CartProvider>
+                    <WishlistProvider>
+                      <OrdersProvider>
+                        <RootLayoutNav />
+                      </OrdersProvider>
+                    </WishlistProvider>
+                  </CartProvider>
+                </AuthProvider>
+              </ThemeProvider>
             </KeyboardProvider>
           </GestureHandlerRootView>
         </QueryClientProvider>

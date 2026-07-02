@@ -17,6 +17,7 @@ import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/context/AuthContext';
 import { useOrders } from '@/context/OrdersContext';
+import { useTheme, type ThemePreference } from '@/context/ThemeContext';
 import { useColors } from '@/hooks/useColors';
 
 export default function ProfileScreen() {
@@ -24,6 +25,7 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { profile, logout, updateProfile } = useAuth();
   const { orders } = useOrders();
+  const { preference, setPreference, isDark } = useTheme();
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ ...profile });
 
@@ -152,17 +154,49 @@ export default function ProfileScreen() {
 
           {/* Preferences */}
           <SectionCard title="Preferences" colors={colors}>
-            <View style={[styles.field, { borderBottomColor: 'transparent' }]}>
-              <View>
-                <Text style={[styles.fieldLabel, { color: colors.mutedForeground }]}>Language</Text>
-                <Text style={[styles.fieldValue, { color: colors.foreground }]}>English</Text>
+            {/* Dark mode toggle */}
+            <View style={[styles.field, { borderBottomColor: colors.border }]}>
+              <View style={styles.prefLeft}>
+                <View style={[styles.prefIconWrap, { backgroundColor: isDark ? '#1E1B4B' : '#FFF8E1' }]}>
+                  <Ionicons name={isDark ? 'moon' : 'sunny'} size={17} color={isDark ? '#818CF8' : '#FBBC05'} />
+                </View>
+                <View>
+                  <Text style={[styles.fieldValue, { color: colors.foreground }]}>Dark Mode</Text>
+                  <Text style={[styles.fieldLabel, { color: colors.mutedForeground }]}>
+                    {preference === 'system' ? 'Following system' : isDark ? 'Dark theme' : 'Light theme'}
+                  </Text>
+                </View>
               </View>
               <Switch
-                value={false}
-                onValueChange={() => Haptics.selectionAsync()}
-                trackColor={{ false: '#E2E8F0', true: colors.primary }}
+                value={isDark}
+                onValueChange={(v) => {
+                  setPreference(v ? 'dark' : 'light');
+                  Haptics.selectionAsync();
+                }}
+                trackColor={{ false: colors.border, true: colors.primary }}
                 thumbColor="#FFFFFF"
               />
+            </View>
+            {/* Theme mode chips */}
+            <View style={[styles.themeRow, { borderBottomColor: 'transparent' }]}>
+              {(['light', 'system', 'dark'] as ThemePreference[]).map((p) => {
+                const active = preference === p;
+                const icon = p === 'light' ? 'sunny-outline' : p === 'dark' ? 'moon-outline' : 'phone-portrait-outline';
+                const label = p === 'light' ? 'Light' : p === 'dark' ? 'Dark' : 'Auto';
+                return (
+                  <Pressable
+                    key={p}
+                    style={[
+                      styles.themeChip,
+                      { borderColor: active ? colors.primary : colors.border, backgroundColor: active ? colors.primary + '18' : colors.muted },
+                    ]}
+                    onPress={() => { setPreference(p); Haptics.selectionAsync(); }}
+                  >
+                    <Ionicons name={icon as any} size={14} color={active ? colors.primary : colors.mutedForeground} />
+                    <Text style={[styles.themeChipText, { color: active ? colors.primary : colors.mutedForeground }]}>{label}</Text>
+                  </Pressable>
+                );
+              })}
             </View>
           </SectionCard>
 
@@ -270,6 +304,11 @@ const styles = StyleSheet.create({
   supportRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth, gap: 12 },
   supportIcon: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   supportLabel: { flex: 1, fontSize: 14, fontWeight: '500', fontFamily: 'Inter_500Medium' },
+  prefLeft: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
+  prefIconWrap: { width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  themeRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingBottom: 14 },
+  themeChip: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, paddingVertical: 8, borderRadius: 10, borderWidth: 1.5 },
+  themeChipText: { fontSize: 12, fontWeight: '600', fontFamily: 'Inter_600SemiBold' },
   logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingVertical: 16, borderRadius: 16, borderWidth: 1.5 },
   logoutText: { fontSize: 15, fontWeight: '600', fontFamily: 'Inter_600SemiBold' },
   version: { fontSize: 12, textAlign: 'center', fontFamily: 'Inter_400Regular' },
