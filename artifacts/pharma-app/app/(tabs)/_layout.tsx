@@ -35,6 +35,10 @@ function NativeTabLayout() {
         <Icon sf={{ default: 'cart', selected: 'cart.fill' }} />
         <Label>Cart</Label>
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="wishlist">
+        <Icon sf={{ default: 'heart', selected: 'heart.fill' }} />
+        <Label>Wishlist</Label>
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="orders">
         <Icon sf={{ default: 'list.bullet.clipboard', selected: 'list.bullet.clipboard.fill' }} />
         <Label>Orders</Label>
@@ -120,6 +124,18 @@ function ClassicTabLayout() {
                 <Ionicons name="cart-outline" size={22} color={color} />
                 <CartBadge />
               </View>
+            ),
+        }}
+      />
+      <Tabs.Screen
+        name="wishlist"
+        options={{
+          title: 'Wishlist',
+          tabBarIcon: ({ color }) =>
+            isIOS ? (
+              <SymbolView name="heart" tintColor={color} size={24} />
+            ) : (
+              <Ionicons name="heart-outline" size={22} color={color} />
             ),
         }}
       />

@@ -166,20 +166,55 @@ export default function ProfileScreen() {
             </View>
           </SectionCard>
 
+          {/* Notifications */}
+          <SectionCard title="Notifications" colors={colors}>
+            <Pressable
+              style={[styles.supportRow, { borderBottomColor: 'transparent' }]}
+              onPress={() => router.push('/notifications')}
+            >
+              <View style={[styles.supportIcon, { backgroundColor: colors.muted }]}>
+                <Ionicons name="notifications-outline" size={18} color={colors.primary} />
+              </View>
+              <Text style={[styles.supportLabel, { color: colors.foreground }]}>Notifications</Text>
+              <Ionicons name="chevron-forward" size={16} color={colors.mutedForeground} />
+            </Pressable>
+          </SectionCard>
+
           {/* Support */}
           <SectionCard title="Support" colors={colors}>
             {[
-              { icon: 'chatbubble-outline', label: 'Live Chat' },
-              { icon: 'call-outline', label: 'Call Support' },
-              { icon: 'help-circle-outline', label: 'FAQ' },
+              { icon: 'chatbubble-outline', label: 'Live Chat', onPress: () => Haptics.selectionAsync() },
+              { icon: 'call-outline', label: 'Call Support', onPress: () => Haptics.selectionAsync() },
+              { icon: 'help-circle-outline', label: 'FAQ', onPress: () => Haptics.selectionAsync() },
             ].map((item, i, arr) => (
               <Pressable
                 key={item.label}
                 style={[styles.supportRow, { borderBottomColor: i < arr.length - 1 ? colors.border : 'transparent' }]}
-                onPress={() => Haptics.selectionAsync()}
+                onPress={item.onPress}
               >
                 <View style={[styles.supportIcon, { backgroundColor: colors.muted }]}>
                   <Ionicons name={item.icon as any} size={18} color={colors.primary} />
+                </View>
+                <Text style={[styles.supportLabel, { color: colors.foreground }]}>{item.label}</Text>
+                <Ionicons name="chevron-forward" size={16} color={colors.mutedForeground} />
+              </Pressable>
+            ))}
+          </SectionCard>
+
+          {/* Legal */}
+          <SectionCard title="Legal" colors={colors}>
+            {[
+              { icon: 'document-text-outline', label: 'Terms of Service', route: '/terms' },
+              { icon: 'shield-outline', label: 'Privacy Policy', route: '/privacy' },
+              { icon: 'information-circle-outline', label: 'About MediWholesale', route: '/about' },
+            ].map((item, i, arr) => (
+              <Pressable
+                key={item.label}
+                style={[styles.supportRow, { borderBottomColor: i < arr.length - 1 ? colors.border : 'transparent' }]}
+                onPress={() => router.push(item.route as any)}
+              >
+                <View style={[styles.supportIcon, { backgroundColor: colors.muted }]}>
+                  <Ionicons name={item.icon as any} size={18} color={colors.mutedForeground} />
                 </View>
                 <Text style={[styles.supportLabel, { color: colors.foreground }]}>{item.label}</Text>
                 <Ionicons name="chevron-forward" size={16} color={colors.mutedForeground} />

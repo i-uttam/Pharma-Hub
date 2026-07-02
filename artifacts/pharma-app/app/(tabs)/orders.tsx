@@ -68,6 +68,15 @@ function OrderCard({ order }: { order: Order }) {
               <Text style={[styles.actionText, { color: colors.primary }]}>Reorder</Text>
             </Pressable>
           )}
+          {order.status === 'Delivered' && (
+            <Pressable
+              style={[styles.actionBtn, { borderColor: colors.destructive }]}
+              onPress={() => router.push(`/return/${order.id}` as any)}
+            >
+              <Ionicons name="return-down-back-outline" size={14} color={colors.destructive} />
+              <Text style={[styles.actionText, { color: colors.destructive }]}>Return</Text>
+            </Pressable>
+          )}
         </View>
       </View>
     </Pressable>

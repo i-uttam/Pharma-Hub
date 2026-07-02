@@ -5,6 +5,7 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   View,
@@ -14,11 +15,28 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MedicineCard from '@/components/MedicineCard';
-import { CATEGORIES, searchMedicines } from '@/data/medicines';
+import { CATEGORIES, MEDICINES, searchMedicines } from '@/data/medicines';
 import { useColors } from '@/hooks/useColors';
 
 const SEARCH_HISTORY_KEY = '@pharma_search_history';
 const TRENDING = ['Paracetamol', 'Amoxicillin', 'Vitamin D3', 'Omeprazole', 'Metformin', 'Insulin'];
+
+const DISCOUNT_OPTIONS = [
+  { label: '10%+', value: 10 },
+  { label: '20%+', value: 20 },
+  { label: '30%+', value: 30 },
+  { label: '40%+', value: 40 },
+];
+
+const PRICE_RANGES = [
+  { label: 'Any', min: 0, max: Infinity },
+  { label: '< ₹50', min: 0, max: 50 },
+  { label: '₹50–200', min: 50, max: 200 },
+  { label: '₹200–500', min: 200, max: 500 },
+  { label: '₹500+', min: 500, max: Infinity },
+];
+
+const ALL_BRANDS = Array.from(new Set(MEDICINES.map((m) => m.brand))).sort();
 
 export default function SearchScreen() {
   const colors = useColors();
@@ -28,8 +46,20 @@ export default function SearchScreen() {
   const [history, setHistory] = useState<string[]>([]);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
+  const [showFilters, setShowFilters] = useState(false);
+  const [priceRangeIndex, setPriceRangeIndex] = useState(0);
+  const [selectedBrands, setSelectedBrands] = useState<Set<string>>(new Set());
+  const [minDiscount, setMinDiscount] = useState(0);
+  const [inStockOnly, setInStockOnly] = useState(false);
+
   const bottomPad = Platform.OS === 'web' ? 34 : insets.bottom;
   const topPad = Platform.OS === 'web' ? 67 : insets.top;
+
+  const activeFilterCount =
+    (priceRangeIndex > 0 ? 1 : 0) +
+    selectedBrands.size +
+    (minDiscount > 0 ? 1 : 0) +
+    (inStockOnly ? 1 : 0);
 
   useEffect(() => {
     setTimeout(() => inputRef.current?.focus(), 200);
@@ -51,13 +81,46 @@ export default function SearchScreen() {
     AsyncStorage.removeItem(SEARCH_HISTORY_KEY).catch(() => {});
   }
 
+  function clearFilters() {
+    setPriceRangeIndex(0);
+    setSelectedBrands(new Set());
+    setMinDiscount(0);
+    setInStockOnly(false);
+  }
+
+  function toggleBrand(brand: string) {
+    setSelectedBrands((prev) => {
+      const next = new Set(prev);
+      next.has(brand) ? next.delete(brand) : next.add(brand);
+      return next;
+    });
+  }
+
   const results = useMemo(() => {
     let list = searchMedicines(query);
     if (activeCategory) list = list.filter((m) => m.category === activeCategory);
+    const pr = PRICE_RANGES[priceRangeIndex];
+    if (pr.min > 0 || pr.max < Infinity) {
+      list = list.filter((m) => m.wholesalePrice >= pr.min && m.wholesalePrice < pr.max);
+    }
+    if (selectedBrands.size > 0) {
+      list = list.filter((m) => selectedBrands.has(m.brand));
+    }
+    if (minDiscount > 0) {
+      list = list.filter((m) => m.discount >= minDiscount);
+    }
+    if (inStockOnly) {
+      list = list.filter((m) => m.stock > 0);
+    }
     return list;
-  }, [query, activeCategory]);
+  }, [query, activeCategory, priceRangeIndex, selectedBrands, minDiscount, inStockOnly]);
 
-  const showResults = query.length > 0 || activeCategory !== null;
+  const showResults = query.length > 0 || activeCategory !== null || activeFilterCount > 0;
+
+  const brandsInResults = useMemo(() => {
+    const base = query.length > 0 ? searchMedicines(query) : MEDICINES;
+    return Array.from(new Set(base.map((m) => m.brand))).sort();
+  }, [query]);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
@@ -84,10 +147,104 @@ export default function SearchScreen() {
             <Ionicons name="barcode-outline" size={20} color={colors.mutedForeground} />
           )}
         </View>
+
+        <Pressable
+          style={[styles.filterBtn, { backgroundColor: activeFilterCount > 0 ? colors.primary : colors.muted, borderColor: colors.border }]}
+          onPress={() => setShowFilters((v) => !v)}
+        >
+          <Ionicons name="options-outline" size={18} color={activeFilterCount > 0 ? '#FFF' : colors.foreground} />
+          {activeFilterCount > 0 && (
+            <View style={[styles.filterBadge, { backgroundColor: '#FFF' }]}>
+              <Text style={[styles.filterBadgeText, { color: colors.primary }]}>{activeFilterCount}</Text>
+            </View>
+          )}
+        </Pressable>
+
         <Pressable onPress={() => router.back()}>
           <Text style={[styles.cancelText, { color: colors.primary }]}>Cancel</Text>
         </Pressable>
       </View>
+
+      {/* Filter panel */}
+      {showFilters && (
+        <View style={[styles.filterPanel, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+          {/* Price Range */}
+          <View style={styles.filterSection}>
+            <Text style={[styles.filterSectionTitle, { color: colors.foreground }]}>Price Range</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
+              {PRICE_RANGES.map((pr, i) => (
+                <Pressable
+                  key={pr.label}
+                  style={[styles.chip, { borderColor: priceRangeIndex === i ? colors.primary : colors.border }, priceRangeIndex === i && { backgroundColor: colors.primary }]}
+                  onPress={() => setPriceRangeIndex(i)}
+                >
+                  <Text style={[styles.chipText, { color: priceRangeIndex === i ? '#FFF' : colors.mutedForeground }]}>{pr.label}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </View>
+
+          {/* Min Discount */}
+          <View style={styles.filterSection}>
+            <Text style={[styles.filterSectionTitle, { color: colors.foreground }]}>Discount</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
+              <Pressable
+                style={[styles.chip, { borderColor: minDiscount === 0 ? colors.primary : colors.border }, minDiscount === 0 && { backgroundColor: colors.primary }]}
+                onPress={() => setMinDiscount(0)}
+              >
+                <Text style={[styles.chipText, { color: minDiscount === 0 ? '#FFF' : colors.mutedForeground }]}>Any</Text>
+              </Pressable>
+              {DISCOUNT_OPTIONS.map((d) => (
+                <Pressable
+                  key={d.value}
+                  style={[styles.chip, { borderColor: minDiscount === d.value ? colors.primary : colors.border }, minDiscount === d.value && { backgroundColor: colors.primary }]}
+                  onPress={() => setMinDiscount(d.value)}
+                >
+                  <Text style={[styles.chipText, { color: minDiscount === d.value ? '#FFF' : colors.mutedForeground }]}>{d.label}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </View>
+
+          {/* Brand */}
+          <View style={styles.filterSection}>
+            <Text style={[styles.filterSectionTitle, { color: colors.foreground }]}>Brand</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
+              {brandsInResults.slice(0, 20).map((b) => {
+                const sel = selectedBrands.has(b);
+                return (
+                  <Pressable
+                    key={b}
+                    style={[styles.chip, { borderColor: sel ? colors.primary : colors.border }, sel && { backgroundColor: colors.primary }]}
+                    onPress={() => toggleBrand(b)}
+                  >
+                    <Text style={[styles.chipText, { color: sel ? '#FFF' : colors.mutedForeground }]}>{b}</Text>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          </View>
+
+          {/* In stock toggle */}
+          <View style={styles.filterSection}>
+            <View style={styles.toggleRow}>
+              <Text style={[styles.filterSectionTitle, { color: colors.foreground }]}>In Stock Only</Text>
+              <Switch
+                value={inStockOnly}
+                onValueChange={setInStockOnly}
+                trackColor={{ false: colors.border, true: colors.primary }}
+                thumbColor="#FFFFFF"
+              />
+            </View>
+          </View>
+
+          {activeFilterCount > 0 && (
+            <Pressable onPress={clearFilters} style={styles.clearFiltersBtn}>
+              <Text style={[styles.clearFiltersText, { color: colors.destructive }]}>Clear All Filters</Text>
+            </Pressable>
+          )}
+        </View>
+      )}
 
       {/* Category filter chips */}
       {showResults && (
@@ -184,6 +341,11 @@ export default function SearchScreen() {
             query.length > 0 ? (
               <Text style={[styles.resultCount, { color: colors.mutedForeground }]}>
                 {results.length} result{results.length !== 1 ? 's' : ''} for &ldquo;{query}&rdquo;
+                {activeFilterCount > 0 ? ` · ${activeFilterCount} filter${activeFilterCount !== 1 ? 's' : ''} applied` : ''}
+              </Text>
+            ) : activeFilterCount > 0 ? (
+              <Text style={[styles.resultCount, { color: colors.mutedForeground }]}>
+                {results.length} result{results.length !== 1 ? 's' : ''} · {activeFilterCount} filter{activeFilterCount !== 1 ? 's' : ''} applied
               </Text>
             ) : null
           }
@@ -192,8 +354,16 @@ export default function SearchScreen() {
               <Ionicons name="search-outline" size={64} color={colors.mutedForeground} />
               <Text style={[styles.emptyTitle, { color: colors.foreground }]}>No results found</Text>
               <Text style={[styles.emptySub, { color: colors.mutedForeground }]}>
-                Try a different medicine name or generic name
+                Try adjusting your filters or search for a different term
               </Text>
+              {activeFilterCount > 0 && (
+                <Pressable
+                  style={[styles.clearFiltersBtn2, { borderColor: colors.primary }]}
+                  onPress={clearFilters}
+                >
+                  <Text style={[styles.clearFiltersBtn2Text, { color: colors.primary }]}>Clear Filters</Text>
+                </Pressable>
+              )}
             </View>
           }
           renderItem={({ item }) => <MedicineCard medicine={item} compact />}
@@ -204,10 +374,22 @@ export default function SearchScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: 1 },
+  header: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: 1 },
   searchRow: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, height: 44, borderRadius: 12, borderWidth: 1 },
   searchInput: { flex: 1, fontSize: 15, fontFamily: 'Inter_400Regular' },
+  filterBtn: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1, position: 'relative' },
+  filterBadge: { position: 'absolute', top: 6, right: 6, width: 14, height: 14, borderRadius: 7, alignItems: 'center', justifyContent: 'center' },
+  filterBadgeText: { fontSize: 9, fontWeight: '700', fontFamily: 'Inter_700Bold' },
   cancelText: { fontSize: 15, fontWeight: '600', fontFamily: 'Inter_600SemiBold' },
+  filterPanel: { borderBottomWidth: 1, paddingHorizontal: 16, paddingVertical: 12, gap: 14 },
+  filterSection: { gap: 8 },
+  filterSectionTitle: { fontSize: 13, fontWeight: '600', fontFamily: 'Inter_600SemiBold' },
+  chipRow: { flexDirection: 'row', gap: 8 },
+  chip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1 },
+  chipText: { fontSize: 12, fontWeight: '500', fontFamily: 'Inter_500Medium' },
+  toggleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  clearFiltersBtn: { alignSelf: 'flex-start' },
+  clearFiltersText: { fontSize: 13, fontWeight: '600', fontFamily: 'Inter_600SemiBold' },
   chipScroll: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingHorizontal: 16, paddingVertical: 10 },
   catChip: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20, borderWidth: 1, borderColor: 'transparent' },
   catChipText: { fontSize: 12, fontWeight: '500', fontFamily: 'Inter_500Medium' },
@@ -226,4 +408,6 @@ const styles = StyleSheet.create({
   emptyState: { alignItems: 'center', paddingTop: 80, gap: 12 },
   emptyTitle: { fontSize: 18, fontWeight: '600', fontFamily: 'Inter_600SemiBold' },
   emptySub: { fontSize: 14, fontFamily: 'Inter_400Regular', textAlign: 'center' },
+  clearFiltersBtn2: { marginTop: 8, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12, borderWidth: 1 },
+  clearFiltersBtn2Text: { fontSize: 14, fontWeight: '600', fontFamily: 'Inter_600SemiBold' },
 });
