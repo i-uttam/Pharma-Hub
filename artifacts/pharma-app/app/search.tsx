@@ -124,45 +124,58 @@ export default function SearchScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      {/* Search bar header */}
+      {/* Search header */}
       <View style={[styles.header, { paddingTop: topPad + 8, backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-        <View style={[styles.searchRow, { backgroundColor: colors.muted, borderColor: colors.border }]}>
-          <Ionicons name="search" size={20} color={colors.mutedForeground} />
-          <TextInput
-            ref={inputRef}
-            style={[styles.searchInput, { color: colors.foreground }]}
-            placeholder="Search medicines, brands, generics…"
-            placeholderTextColor={colors.mutedForeground}
-            value={query}
-            onChangeText={setQuery}
-            returnKeyType="search"
-            onSubmitEditing={() => saveToHistory(query)}
-            autoCapitalize="none"
-          />
-          {query.length > 0 ? (
-            <Pressable onPress={() => setQuery('')}>
-              <Ionicons name="close-circle" size={20} color={colors.mutedForeground} />
-            </Pressable>
-          ) : (
-            <Ionicons name="barcode-outline" size={20} color={colors.mutedForeground} />
-          )}
+        <View style={styles.headerRow}>
+          {/* Back button */}
+          <Pressable
+            style={[styles.navBtn, { backgroundColor: colors.muted, borderColor: colors.border }]}
+            onPress={() => router.back()}
+            hitSlop={8}
+          >
+            <Ionicons name="arrow-back" size={20} color={colors.foreground} />
+          </Pressable>
+
+          {/* Search input — takes all remaining space */}
+          <View style={[styles.inputWrap, { backgroundColor: colors.muted, borderColor: showFilters ? colors.primary : colors.border }]}>
+            <Ionicons name="search" size={18} color={colors.mutedForeground} style={{ flexShrink: 0 }} />
+            <TextInput
+              ref={inputRef}
+              style={[styles.searchInput, { color: colors.foreground }]}
+              placeholder="Search medicines…"
+              placeholderTextColor={colors.mutedForeground}
+              value={query}
+              onChangeText={setQuery}
+              returnKeyType="search"
+              onSubmitEditing={() => saveToHistory(query)}
+              autoCapitalize="none"
+            />
+            {query.length > 0 ? (
+              <Pressable onPress={() => setQuery('')} hitSlop={8}>
+                <Ionicons name="close-circle" size={18} color={colors.mutedForeground} />
+              </Pressable>
+            ) : (
+              <Ionicons name="barcode-outline" size={18} color={colors.mutedForeground} style={{ flexShrink: 0 }} />
+            )}
+          </View>
+
+          {/* Filter button — fixed size, never squishes */}
+          <Pressable
+            style={[
+              styles.filterToggleBtn,
+              { backgroundColor: activeFilterCount > 0 ? colors.primary : colors.muted, borderColor: activeFilterCount > 0 ? colors.primary : colors.border },
+            ]}
+            onPress={() => setShowFilters((v) => !v)}
+            hitSlop={4}
+          >
+            <Ionicons name="options-outline" size={18} color={activeFilterCount > 0 ? '#FFF' : colors.foreground} />
+            {activeFilterCount > 0 && (
+              <View style={[styles.filterCountBadge, { backgroundColor: '#FFF' }]}>
+                <Text style={[styles.filterCountText, { color: colors.primary }]}>{activeFilterCount}</Text>
+              </View>
+            )}
+          </Pressable>
         </View>
-
-        <Pressable
-          style={[styles.filterBtn, { backgroundColor: activeFilterCount > 0 ? colors.primary : colors.muted, borderColor: colors.border }]}
-          onPress={() => setShowFilters((v) => !v)}
-        >
-          <Ionicons name="options-outline" size={18} color={activeFilterCount > 0 ? '#FFF' : colors.foreground} />
-          {activeFilterCount > 0 && (
-            <View style={[styles.filterBadge, { backgroundColor: '#FFF' }]}>
-              <Text style={[styles.filterBadgeText, { color: colors.primary }]}>{activeFilterCount}</Text>
-            </View>
-          )}
-        </Pressable>
-
-        <Pressable onPress={() => router.back()}>
-          <Text style={[styles.cancelText, { color: colors.primary }]}>Cancel</Text>
-        </Pressable>
       </View>
 
       {/* Filter panel */}
@@ -374,13 +387,14 @@ export default function SearchScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: 1 },
-  searchRow: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, height: 44, borderRadius: 12, borderWidth: 1 },
-  searchInput: { flex: 1, fontSize: 15, fontFamily: 'Inter_400Regular' },
-  filterBtn: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1, position: 'relative' },
-  filterBadge: { position: 'absolute', top: 6, right: 6, width: 14, height: 14, borderRadius: 7, alignItems: 'center', justifyContent: 'center' },
-  filterBadgeText: { fontSize: 9, fontWeight: '700', fontFamily: 'Inter_700Bold' },
-  cancelText: { fontSize: 15, fontWeight: '600', fontFamily: 'Inter_600SemiBold' },
+  header: { paddingHorizontal: 12, paddingBottom: 12, borderBottomWidth: 1 },
+  headerRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  navBtn: { width: 40, height: 40, borderRadius: 12, borderWidth: 1, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  inputWrap: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1.5, borderRadius: 12, paddingHorizontal: 12, height: 44, minWidth: 0 },
+  searchInput: { flex: 1, fontSize: 15, fontFamily: 'Inter_400Regular', minWidth: 0 },
+  filterToggleBtn: { width: 40, height: 40, borderRadius: 12, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative' },
+  filterCountBadge: { position: 'absolute', top: -5, right: -5, minWidth: 16, height: 16, borderRadius: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3, borderWidth: 1.5, borderColor: 'transparent' },
+  filterCountText: { fontSize: 9, fontWeight: '700', fontFamily: 'Inter_700Bold' },
   filterPanel: { borderBottomWidth: 1, paddingHorizontal: 16, paddingVertical: 12, gap: 14 },
   filterSection: { gap: 8 },
   filterSectionTitle: { fontSize: 13, fontWeight: '600', fontFamily: 'Inter_600SemiBold' },

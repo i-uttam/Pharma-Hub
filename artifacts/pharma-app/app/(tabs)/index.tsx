@@ -33,12 +33,12 @@ export default function HomeScreen() {
       {/* Header */}
       <View style={[styles.header, { paddingTop: topPad + 16, backgroundColor: colors.primary }]}>
         <View style={styles.headerTop}>
-          <View>
-            <Text style={styles.greeting}>{greeting} 👋</Text>
+          <View style={styles.headerLeft}>
+            <Text style={styles.greeting} numberOfLines={1}>{greeting} 👋</Text>
             <Text style={styles.businessName} numberOfLines={1}>{profile.businessName}</Text>
           </View>
           <View style={styles.headerActions}>
-            <Pressable style={styles.iconBtn} onPress={() => Haptics.selectionAsync()}>
+            <Pressable style={styles.iconBtn} onPress={() => router.push('/notifications')}>
               <Ionicons name="notifications-outline" size={22} color="#FFFFFF" />
               <View style={styles.notifDot} />
             </Pressable>
@@ -165,10 +165,11 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   header: { paddingHorizontal: 20, paddingBottom: 20, borderBottomLeftRadius: 24, borderBottomRightRadius: 24 },
-  headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 },
+  headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, gap: 12 },
+  headerLeft: { flex: 1, minWidth: 0 },
   greeting: { fontSize: 13, color: 'rgba(255,255,255,0.8)', fontFamily: 'Inter_400Regular' },
-  businessName: { fontSize: 18, fontWeight: '700', color: '#FFFFFF', fontFamily: 'Inter_700Bold', marginTop: 2, maxWidth: 220 },
-  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  businessName: { fontSize: 18, fontWeight: '700', color: '#FFFFFF', fontFamily: 'Inter_700Bold', marginTop: 2 },
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 12, flexShrink: 0 },
   iconBtn: { position: 'relative' },
   notifDot: { position: 'absolute', top: -1, right: -1, width: 8, height: 8, borderRadius: 4, backgroundColor: '#FBBC05', borderWidth: 1.5, borderColor: '#0F9D58' },
   avatar: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
