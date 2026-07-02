@@ -8,6 +8,7 @@ export const modules: ModuleMap = {
   "./components/mockups/pharma-app/Login.tsx": () => import("../components/mockups/pharma-app/Login.tsx"),
   "./components/mockups/pharma-app/Orders.tsx": () => import("../components/mockups/pharma-app/Orders.tsx"),
   "./components/mockups/pharma-app/ProductDetail.tsx": () => import("../components/mockups/pharma-app/ProductDetail.tsx"),
+  "./components/mockups/pharma-app/Products.tsx": () => import("../components/mockups/pharma-app/Products.tsx"),
   "./components/mockups/pharma-app/Profile.tsx": () => import("../components/mockups/pharma-app/Profile.tsx"),
   "./components/mockups/pharma-app/Splash.tsx": () => import("../components/mockups/pharma-app/Splash.tsx")
 };
